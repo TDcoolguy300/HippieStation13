@@ -123,12 +123,20 @@ var/list/ai_list = list()
 					mind.store_memory("As an AI, you must obey your silicon laws above all else. Your objectives will consider you to be dead.")
 					src << "<span class='userdanger'>You have been installed as an AI! </span>"
 					src << "<span class='danger'>You must obey your silicon laws above all else. Your objectives will consider you to be dead.</span>"
+					if(ticker && ticker.mode)
+						ticker.mode.remove_cultist(mind, 0)
+						ticker.mode.remove_revolutionary(mind, 0)
+						ticker.mode.remove_gangster(mind, remove_bosses=1)
+						ticker.mode.remove_thrall(mind,0)
+						ticker.mode.remove_shadowling(mind)
+						ticker.mode.remove_hog_follower(mind,0)
 
-			src << "<B>You are playing the station's AI. The AI cannot move, but can interact with many objects while viewing them (through cameras).</B>"
-			src << "<B>To look at other parts of the station, click on yourself to get a camera menu.</B>"
-			src << "<B>While observing through a camera, you can use most (networked) devices which you can see, such as computers, APCs, intercoms, doors, etc.</B>"
-			src << "To use something, simply click on it."
-			src << "Use say :b to speak to your cyborgs through binary."
+			src << "<B>You are playing the station's AI. The AI cannot physically move, but can interact with many objects so long as it has a clear line of sight.</B>"
+			src << "<B>To look at other parts of the station, use the HUD to access cameras and follow players, or use the movement keys to change your field of view.</B>"
+			src << "<B>You can use almost any device which you can see, such as computers, APCs, intercoms, and doors.</B>"
+			src << "To use something, simply click on it.  Abuse of station property may lead to your immediate termination."
+			src << "Interpret and follow your laws to the best of your ability. Failure to follow your laws may lead to your ban."
+			src << "Type 'say :b' to speak to your cyborgs privately. Type 'say :h' to speak through a holographic projection."
 			src << "For department channels, use the following say commands:"
 			src << ":o - AI Private, :c - Command, :s - Security, :e - Engineering, :u - Supply, :v - Service, :m - Medical, :n - Science."
 			if (!(ticker && ticker.mode && (mind in ticker.mode.malf_ai)))
@@ -162,7 +170,7 @@ var/list/ai_list = list()
 		return
 
 		//if(icon_state == initial(icon_state))
-	var/icontype = input("Please, select a display!", "AI", null/*, null*/) in list("Clown", "Monochrome", "Blue", "Inverted", "Firewall", "Green", "Red", "Static", "Red October", "House", "Heartline", "Hades", "Helios", "President", "Syndicat Meow", "Alien", "Too Deep", "Triumvirate", "Triumvirate-M", "Text", "Matrix", "Dorf", "Bliss", "Not Malf", "Fuzzy", "Goon", "Database", "Glitchman", "Murica", "Nanotrasen", "Gentoo")
+	var/icontype = input("Please, select a display!", "AI", null/*, null*/) in list("Clown", "Monochrome", "Blue", "Inverted", "Firewall", "Green", "Red", "Static", "Red October", "House", "Heartline", "Hades", "Helios", "President", "Syndicat Meow", "Alien", "Too Deep", "Triumvirate", "Triumvirate-M", "Text", "Matrix", "Dorf", "Bliss", "Not Malf", "Fuzzy", "Goon", "Database", "Glitchman", "Murica", "Nanotrasen", "Gentoo", "Buckley")
 	if(icontype == "Clown")
 		icon_state = "ai-clown2"
 	else if(icontype == "Monochrome")
@@ -225,6 +233,8 @@ var/list/ai_list = list()
 		icon_state = "ai-nanotrasen"
 	else if(icontype == "Gentoo")
 		icon_state = "ai-gentoo"
+	else if(icontype == "Buckley")
+		icon_state = "ai-buckley"
 	//else
 			//usr <<"You can only change your display once!"
 			//return
@@ -746,6 +756,10 @@ var/list/ai_list = list()
 	apc.malfvacate()
 
 /mob/living/silicon/ai/proc/toggle_camera_light()
+	set name = "Toggle Camera Lights"
+	set desc = "Turn your camera lights on/off."
+	set category = "AI Commands"
+
 	if(stat != CONSCIOUS)
 		return
 

@@ -255,16 +255,6 @@
 	locked = 1
 	category = list("Weapons")
 
-/datum/design/reciever		//The amount of research needed and the fact that silver was needed to make this which was ONLY used for the improvised shotgun was awful.
-	name = "Modular Receiver"
-	desc = "A modular receiver and trigger assembly for a variety of firearms."
-	id = "reciever"
-	req_tech = list("combat" = 2, "materials" = 3)
-	build_type = PROTOLATHE
-	materials = list(MAT_METAL = 1500)
-	build_path = /obj/item/weaponcrafting/reciever
-	category = list("Weapons")
-
 //SABR Mags
 
 /datum/design/mag_smg
@@ -294,7 +284,7 @@
 	locked = 1
 
 /datum/design/mag_smg/incin_tox
-	name = "SABR SMG Urnaium Magazine (9mmTX)"
+	name = "SABR SMG Uranium Magazine (9mmTX)"
 	desc = "A 30-round uranium tipped round magazine for the prototype submachine gun. The bullet injects toxin into the victim, but with less overall physical damage."
 	id = "mag_smg_tx"
 	materials = list(MAT_METAL = 3000, MAT_URANIUM = 1000)
@@ -325,7 +315,7 @@
 	name = "Unloaded Technological Shotshell"
 	desc = "A high-tech shotgun shell which can be loaded with materials to produce unique effects."
 	id = "techshotshell"
-	req_tech = list("combat" = 3, "materials" = 3, "powerstorage" = 4, "magnets" = 3)
+	req_tech = list("combat" = 2, "materials" = 2, "engineering" = 2)
 	build_type = PROTOLATHE
 	materials = list(MAT_METAL = 1000, MAT_GLASS = 200)
 	build_path = /obj/item/ammo_casing/shotgun/techshell

@@ -241,6 +241,18 @@
 	//min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	flags = NODROP
 
+/obj/item/clothing/suit/dio
+	name = "DIO's yellow jacket"
+	desc = "So fashionable it's menacing."
+	icon_state = "DIO"
+	item_state = "DIO"
+
+/obj/item/clothing/suit/jotaro
+	name = "Delinquent's school coat"
+	desc = "Wear this, and you'll be shining like platinum."
+	icon_state = "jotaro"
+	item_state = "jotaro"
+
 /*
  * Misc
  */
@@ -265,6 +277,25 @@
 	desc = "A baggy shirt with vintage game character Phanic the Weasel. Why would anyone wear this?"
 	icon_state = "nerdshirt"
 	item_state = "nerdshirt"
+
+/obj/item/clothing/suit/vapeshirt //wearing this is asking to get beat.
+	name = "Vape Naysh Shirt"
+	desc = "A cheap white T-shirt with a big tacky \"VN\" on the front. Why would you wear this unironically?"
+	icon_state = "vapeshirt"
+	item_state = "vapeshirt"
+	alternate_screams = list('sound/voice/vapenaysh.ogg')
+
+/obj/item/clothing/suit/vapeshirt/equipped(mob/living/carbon/user, slot)
+	if(slot == slot_wear_suit)
+		user.add_screams(src.alternate_screams)
+	else
+		if(ishuman(user))
+			var/mob/living/carbon/human/H = user
+			H.reindex_screams()
+		else
+			user.reindex_screams()
+
+	return ..()
 
 /obj/item/clothing/suit/jacket
 	name = "bomber jacket"
@@ -323,8 +354,9 @@
 	item_state = "xenos_helm"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS|HANDS
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
-
-
+	flags = STOPSPRESSUREDMAGE
+	cold_protection = CHEST | GROIN | LEGS | FEET | ARMS | HANDS
+	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
 
 // WINTER COATS
 

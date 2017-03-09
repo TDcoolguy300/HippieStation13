@@ -39,7 +39,7 @@
 
 /obj/item/projectile/bullet/a40mm/on_hit(atom/target, blocked = 0)
 	..()
-	explosion(target, -1, 3, 2, 4, 0, flame_range = 4)
+	explosion(target, -1, 3, 2, 4, 0, flame_range = 4) //Why is the light impact range smaller than the heavy impact range?
 	return 1
 
 /obj/item/projectile/temp
@@ -201,8 +201,8 @@ obj/item/projectile/kinetic/New()
 	name = "plasma blast"
 	icon_state = "plasmacutter"
 	damage_type = BRUTE
-	damage = 5
-	range = 3
+	damage = 15
+	range = 6
 
 /obj/item/projectile/plasma/New()
 	var/turf/proj_turf = get_turf(src)
@@ -213,7 +213,7 @@ obj/item/projectile/kinetic/New()
 		var/pressure = environment.return_pressure()
 		if(pressure < 30)
 			name = "full strength plasma blast"
-			damage *= 3
+			damage *= 2
 	..()
 
 /obj/item/projectile/plasma/on_hit(atom/target)
@@ -225,8 +225,28 @@ obj/item/projectile/kinetic/New()
 		return -1
 
 /obj/item/projectile/plasma/adv
-	range = 5
+	range = 7
 
 /obj/item/projectile/plasma/adv/mech
-	damage = 10
-	range = 6
+	damage = 25
+	range = 8
+
+/obj/item/projectile/plasmoid
+ 	name = "plasmoid"
+ 	icon_state = "plasmoid"
+ 	damage_type = BURN
+ 	damage = 20
+ 	range = 14
+ 	luminosity = 6
+ 	var/temperature = 200
+
+/obj/item/projectile/plasmoid/on_hit(atom/target, blocked = 0)
+	..()
+	if(istype(target,/turf/)||istype(target,/obj/structure/))
+		target.ex_act(2)
+	if(iscarbon(target))
+		var/mob/living/carbon/M = target
+		M.bodytemperature += temperature
+		M.adjust_fire_stacks(1)
+		M.IgniteMob()
+	return 1

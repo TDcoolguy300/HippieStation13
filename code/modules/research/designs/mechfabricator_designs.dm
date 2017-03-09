@@ -567,11 +567,20 @@
 	construction_time = 100
 	category = list("Exosuit Equipment")
 
-/datum/design/mech_lmg
-	name = "Exosuit Weapon (\"Ultra AC 2\" LMG)"
-	id = "mech_lmg"
+/datum/design/mech_disabler
+	name = "Exosuit Weapon (RTC \"Detainer\" repeating disabler)"
+	id = "mech_disabler"
 	build_type = MECHFAB
-	build_path = /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg
+	build_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/disabler
+	materials = list(MAT_METAL=10000)
+	construction_time = 100
+	category = list("Exosuit Equipment")
+
+/datum/design/mech_laser
+	name = "Exosuit Weapon (CH-PS \"Immolator\" laser)"
+	id = "mech_laser"
+	build_type = MECHFAB
+	build_path = /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser
 	materials = list(MAT_METAL=10000)
 	construction_time = 100
 	category = list("Exosuit Equipment")
@@ -723,5 +732,5 @@
 	build_type = MECHFAB
 	materials = list(MAT_METAL = 800, MAT_GLASS = 350)
 	construction_time=150
-	build_path = /obj/item/drone_shell
+	build_path = /obj/item/drone_shell/safedrone
 	category = list("Misc")

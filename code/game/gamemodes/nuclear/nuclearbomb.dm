@@ -325,6 +325,8 @@ var/bomb_set
 
 #define NUKERANGE 80
 /obj/machinery/nuclearbomb/proc/explode()
+	var/alarmSound = 'sound/machines/Alarm.ogg' 
+
 	if (safety)
 		timing = 0
 		return
@@ -333,8 +335,10 @@ var/bomb_set
 	yes_code = 0
 	safety = 1
 	update_icon()
+	if(prob(1))
+		alarmSound ='sound/misc/imnuclear.ogg' /*Memes.*/
 	for(var/mob/M in player_list)
-		M << 'sound/machines/Alarm.ogg'
+		M << alarmSound
 	if (ticker && ticker.mode)
 		ticker.mode.explosion_in_progress = 1
 	sleep(100)
@@ -398,6 +402,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 	icon_state = "nucleardisk"
 	item_state = "card-id"
 	w_class = 1
+	var/king_timer = 0
 
 /obj/item/weapon/disk/nuclear/New()
 	..()
@@ -409,6 +414,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 	if(disk_loc.z > ZLEVEL_CENTCOM)
 		get(src, /mob) << "<span class='danger'>You can't help but feel that you just lost something back there...</span>"
 		qdel(src)
+		
 
 /obj/item/weapon/disk/nuclear/Destroy()
 	if(blobstart.len > 0)

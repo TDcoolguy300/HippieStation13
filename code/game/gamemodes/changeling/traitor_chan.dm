@@ -3,7 +3,7 @@
 	config_tag = "traitorchan"
 	traitors_possible = 3 //hard limit on traitors if scaling is turned off
 	restricted_jobs = list("AI", "Cyborg")
-	required_players = 0
+	required_players = 25
 	required_enemies = 1	// how many of each type are required
 	recommended_enemies = 3
 	reroll_friendly = 1
@@ -71,4 +71,5 @@
 				if(age_check(character.client))
 					if(!(character.job in restricted_jobs))
 						character.mind.make_Changling()
+						return 1
 	..()

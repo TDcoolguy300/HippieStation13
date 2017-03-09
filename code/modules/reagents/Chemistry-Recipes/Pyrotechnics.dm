@@ -25,8 +25,11 @@
 	required_temp = 474
 
 /datum/chemical_reaction/nitroglycerin_explosion/on_reaction(datum/reagents/holder, created_volume)
+	var/atom/H = holder.my_atom
 	var/location = get_turf(holder.my_atom)
 	var/datum/effect_system/reagents_explosion/e = new()
+	message_admins("A nitroglycerin explosion has occurred at <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[H.x];Y=[H.y];Z=[H.z]'>([H.x],[H.y],[H.z])</a> last touched by [key_name_admin(H.fingerprintslast)]")
+	log_game("A nitroglycerin explosion has occurred at <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[H.x];Y=[H.y];Z=[H.z]'>([H.x],[H.y],[H.z])</a> last touched by [key_name_admin(H.fingerprintslast)]")
 	e.set_up(round(created_volume/2, 1), location, 0, 0)
 	e.start()
 	holder.clear_reagents()
@@ -39,8 +42,11 @@
 	result_amount = 2
 
 /datum/chemical_reaction/potassium_explosion/on_reaction(datum/reagents/holder, created_volume)
+	var/atom/H = holder.my_atom
 	var/location = get_turf(holder.my_atom)
 	var/datum/effect_system/reagents_explosion/e = new()
+	message_admins("A potassium explosion has occurred at <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[H.x];Y=[H.y];Z=[H.z]'>([H.x],[H.y],[H.z])</a> last touched by [key_name_admin(H.fingerprintslast)]")
+	log_game("A potassium explosion has occurred at <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[H.x];Y=[H.y];Z=[H.z]'>([H.x],[H.y],[H.z])</a> last touched by [key_name_admin(H.fingerprintslast)]")
 	e.set_up(round (created_volume/10, 1), location, 0, 0)
 	e.start()
 	holder.clear_reagents()
@@ -63,8 +69,11 @@
 
 /datum/chemical_reaction/blackpowder_explosion/on_reaction(datum/reagents/holder, created_volume)
 	sleep(rand(50,100))
+	var/atom/H = holder.my_atom
 	var/location = get_turf(holder.my_atom)
 	var/datum/effect_system/reagents_explosion/e = new()
+	message_admins("A blackpowder explosion has occurred at <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[H.x];Y=[H.y];Z=[H.z]'>([H.x],[H.y],[H.z])</a> last touched by [key_name_admin(H.fingerprintslast)]")
+	log_game("A blackpowder explosion has occurred at <A HREF='?_src_=holder;adminplayerobservecoodjump=1;X=[H.x];Y=[H.y];Z=[H.z]'>([H.x],[H.y],[H.z])</a> last touched by [key_name_admin(H.fingerprintslast)]")
 	e.set_up(1 + round(created_volume/6, 1), location, 0, 0)
 	e.start()
 	holder.clear_reagents()
@@ -351,5 +360,32 @@
 	result_amount = 3
 
 /datum/chemical_reaction/pyrosium/on_reaction(datum/reagents/holder, created_volume)
-	holder.chem_temp = 20 // also cools the fuck down
+	holder.chem_temp = 500 // also heats the fuck up because coders make no sense
 	return
+
+/datum/chemical_reaction/cryogenic_fluid
+	name = "cryogenic_fluid"
+	id = "cryogenic_fluid"
+	result = "cryogenic_fluid"
+	required_reagents = list("cryostylane" = 4, "lube" = 1, "pyrosium" = 1)
+	result_amount = 4
+
+/datum/chemical_reaction/cryostylane/on_reaction(datum/reagents/holder, created_volume)
+	holder.chem_temp = 0 // cools the fuck down
+	return
+
+/datum/chemical_reaction/fartium_explosion
+	name = "Fartium explosion"
+	id = "fartium_explosion"
+	result = null
+	required_reagents = list("fartium" = 1)
+	result_amount = 1
+	required_temp = 474
+
+/datum/chemical_reaction/fartium_explosion/on_reaction(datum/reagents/holder, created_volume)
+	var/location = get_turf(holder.my_atom)
+	var/datum/effect_system/reagents_explosion/e = new()
+	e.set_up(round(created_volume/3, 1), location, 0, 0)
+	playsound(src, 'sound/misc/fartmassive.ogg', 75, 1, 5)
+	e.start()
+	holder.clear_reagents()

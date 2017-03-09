@@ -1,5 +1,5 @@
 /obj/item/weapon/banhammer
-	desc = "A banhammer"
+	desc = "<font color='red'><b>BWOINK</b></font>"
 	name = "banhammer"
 	icon = 'icons/obj/items.dmi'
 	icon_state = "toyhammer"
@@ -17,7 +17,7 @@
 /obj/item/weapon/banhammer/attack(mob/M, mob/user)
 	M << "<font color='red'><b> You have been banned FOR NO REISIN by [user]<b></font>"
 	user << "<font color='red'>You have <b>BANNED</b> [M]</font>"
-	playsound(loc, 'sound/effects/adminhelp.ogg', 15) //keep it at 15% volume so people don't jump out of their skin too much
+	playsound(loc, 'sound/effects/adminhelp.ogg', 30) //we want them to jump out of their skin
 
 
 /obj/item/weapon/nullrod
@@ -25,13 +25,35 @@
 	desc = "A rod of pure obsidian, its very presence disrupts and dampens the powers of Nar-Sie's followers."
 	icon_state = "nullrod"
 	item_state = "nullrod"
-	slot_flags = SLOT_BELT
+	slot_flags = SLOT_BELT | SLOT_BACK
 	force = 15
 	stamina_percentage = 0.7
 	throw_speed = 3
 	throw_range = 4
 	throwforce = 10
-	w_class = 1
+	w_class = 3
+	melee_rename = 1
+	melee_reskin = 1
+	hitsound = 'sound/weapons/genhit2.ogg'
+
+
+/obj/item/weapon/nullrod/New()
+	moptions["Default"] = "nullrod"
+	moptions["Seraphim Sword"] = "asword"
+	moptions["God Axe"] = "gaxe"
+	moptions["Jesus Mace"] = "jmace"
+	moptions["Cancel"] = null
+
+/obj/item/weapon/nullrod/attackby(obj/item/A, mob/user, params)
+	if(melee_rename)
+		if(istype(A, /obj/item/weapon/pen))
+			rename_wopit(user)
+
+/obj/item/weapon/attack_hand(mob/user)
+	if(melee_reskin && !mreskinned && loc == user)
+		reskin_wopit(user)
+		return
+	..()
 
 /obj/item/weapon/nullrod/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is impaling \himself with the [src.name]! It looks like \he's trying to commit suicide.</span>")

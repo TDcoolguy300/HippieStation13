@@ -31,6 +31,7 @@
 	var/damage_transfer = 1 //how much damage from each attack we transfer to the owner
 	var/mob/living/summoner
 	var/range = 10 //how far from the user the spirit can be
+	var/guardiancolor = "#85C0E9" //Used for deciding ranged crystal spray color
 	var/playstyle_string = "You are a standard Guardian. You shouldn't exist!"
 	var/magic_fluff_string = " You draw the Coder, symbolizing bugs and errors. This shouldn't happen! Submit a bug report!"
 	var/tech_fluff_string = "BOOT SEQUENCE COMPLETE. ERROR MODULE LOADED. THIS SHOULDN'T HAPPEN. Submit a bug report!"
@@ -234,6 +235,7 @@
 	..()
 	collision_ignite(AM)
 
+
 /mob/living/simple_animal/hostile/guardian/fire/Bumped(AM as mob|obj)
 	..()
 	collision_ignite(AM)
@@ -248,6 +250,7 @@
 		if(AM != summoner && M.fire_stacks < 7)
 			M.fire_stacks = 7
 			M.IgniteMob()
+			log_admin("[key_name(src)] as ignited [key_name(src)] on fire via bump!")
 
 /mob/living/simple_animal/hostile/guardian/fire/Bump(AM as mob|obj)
 	..()
@@ -264,6 +267,9 @@
 	tech_fluff_string = "Boot sequence complete. Standard combat modules loaded. Holoparasite swarm online."
 	bio_fluff_string = "Your scarab swarm stirs to life, ready to tear apart your enemies."
 	var/battlecry = "AT"
+	mob_reflect_chance = 40
+	var/holopunchrng = null
+
 
 /mob/living/simple_animal/hostile/guardian/punch/verb/Battlecry()
 	set name = "Set Battlecry"
@@ -275,15 +281,26 @@
 
 
 
-/mob/living/simple_animal/hostile/guardian/punch/AttackingTarget()
+/mob/living/simple_animal/hostile/guardian/punch/AttackingTarget(mob/living/T, mob/living/carbon/human/H)
 	..()
-	if(istype(target, /mob/living))
-		src.say("[src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry]\
-		[src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry]")
-		playsound(loc, src.attack_sound, 50, 1, 1)
-		playsound(loc, src.attack_sound, 50, 1, 1)
-		playsound(loc, src.attack_sound, 50, 1, 1)
-		playsound(loc, src.attack_sound, 50, 1, 1)
+	if(istype(T))
+		holopunchrng = rand(1,100)
+		switch(holopunchrng)
+			if(50 to 100)
+				src.say("[src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry]\
+				[src.battlecry][src.battlecry][src.battlecry][src.battlecry][src.battlecry]")
+				playsound(loc, src.attack_sound, 50, 1, 1)
+				playsound(loc, src.attack_sound, 50, 1, 1)
+				playsound(loc, src.attack_sound, 50, 1, 1)
+				playsound(loc, src.attack_sound, 50, 1, 1)
+				H.apply_effect(1, STUN)
+			if(20 to 50)
+				src.say("[src.battlecry]")
+				H.apply_effect(3, WEAKEN)
+			if(0 to 20)
+				if(istype(target, /mob/living/carbon/human))
+					H.take_organ_damage(BRUTE, BURN)
+				else ..()
 
 //Healer
 
@@ -489,6 +506,29 @@
 				if(G.summoner)
 					G.summoner << "<span class='danger'><B>[AM] has crossed your surveillance trap at [get_area(snare_loc)].</span></B>"
 
+/mob/living/simple_animal/hostile/guardian/ranged/Shoot(atom/targeted_atom)
+	var/obj/item/projectile/guardian/shard = ..()
+	if(!shard)
+		return
+	shard.color = guardiancolor
+
+/proc/techcolor2hex(var/colour)
+	switch(colour)
+		if("orange")
+			return "#F87531"
+		if("neon")
+			return "#80FF15"
+		if("pink")
+			return "#FF65FF"
+		if("red")
+			return "#FF252F"
+		if("blue")
+			return "#00FFFF"
+		if("green")
+			return "#15FF1C"
+		else
+			return "#85C0E9"
+
 ////Bomb
 
 /mob/living/simple_animal/hostile/guardian/bomb
@@ -574,57 +614,155 @@
 	var/ling_failure = "The deck refuses to respond to a souless creature such as you."
 	var/list/possible_guardians = list("Chaos", "Standard", "Ranged", "Support", "Explosive")
 	var/random = TRUE
+	var/limiteduses = TRUE
+	var/killchance = FALSE
+	var/useonothers = FALSE
+	var/percentchance = 20
+	var/cooldown = FALSE
+	var/playsound = FALSE
+	var/usekey = TRUE
+	var/inUse = FALSE
+	var/list/holo_black = list(
+		/mob/living/simple_animal/revenant,
+		/mob/living/simple_animal/hostile/statue,
+		/mob/living/simple_animal/hostile/true_changeling,
+		/mob/living/simple_animal/hostile/guardian
+	)
 
 /obj/item/weapon/guardiancreator/attack_self(mob/living/user)
-	for(var/mob/living/simple_animal/hostile/guardian/G in living_mob_list)
-		if (G.summoner == user)
-			user << "You already have a [mob_name]!"
-			return
-	if(user.mind && user.mind.changeling)
-		user << "[ling_failure]"
-		return
-	if(used == TRUE)
-		user << "[used_message]"
-		return
-	used = TRUE
-	user << "[use_message]"
-	var/list/mob/dead/observer/candidates = pollCandidates("Do you want to play as the [mob_name] of [user.real_name]?", "pAI", null, FALSE, 100)
-	var/mob/dead/observer/theghost = null
-
-	if(candidates.len)
-		theghost = pick(candidates)
-		var/mob/living/simple_animal/hostile/guardian/G = spawn_guardian(user, theghost.key)
-		var/timelimit = world.time + 600//1 min to rename the stand
-		//Give the stand user 3 chances to rename their stand
-		for(var/i = 2, i >= 0,i--)
-			var/guardianNewName = stripped_input(user, "You are the user of [G.name]. Would you like to name your guardian something else?", "Name Guardian", G.name, MAX_NAME_LEN)
-			guardianNewName = reject_bad_name(guardianNewName, 1)
-			if(timelimit >= world.time)
-				if(!isnull(guardianNewName))
-					G.name = guardianNewName
-					return
-				else
-					if(i > 0)
-						user << "<span class='danger'>That's an invalid name! You have [i] more [i > 1 ? "attempts" : "attempt"].</span>"
-					else
-						user << "<span class='danger'>Sorry, you've ran out of attempts! Looks like you're stuck with [G.name]!</span>"
-			else
-				user << "<span class='danger'>Sorry, you've ran out of time! Looks like you're stuck with [G.name]!</span>"
+	if(usekey == TRUE)
+		for(var/mob/living/simple_animal/hostile/guardian/G in living_mob_list)
+			if (G.summoner == user)
+				user << "You already have a [mob_name]!"
 				return
+		if(user.mind && user.mind.changeling)
+			user << "[ling_failure]"
+			return
+		if(used == TRUE)
+			user << "[used_message]"
+			return
+		if(limiteduses == TRUE)
+			used = TRUE
+		if(killchance == TRUE)
+			if(prob(percentchance))
+				user << "You didn't have enough fighting spirit!"
+				user.setToxLoss(100000) //Husks them to stop clone cheeze (not anymore now that it in an event)
+				return
+		user << "[use_message]"
+		var/list/mob/dead/observer/candidates = pollCandidates("Do you want to play as the [mob_name] of [user.real_name]?", "pAI", null, FALSE, 100)
+		var/mob/dead/observer/theghost = null
+
+		if(candidates.len)
+			theghost = pick(candidates)
+			var/mob/living/simple_animal/hostile/guardian/G = spawn_guardian(user, theghost.key)
+			if(playsound == TRUE)
+				user << 'sound/misc/standactivated.ogg'
+			var/timelimit = world.time + 600//1 min to rename the stand
+			//Give the stand user 3 chances to rename their stand
+			for(var/i = 2, i >= 0,i--)
+				var/guardianNewName = stripped_input(user, "You are the user of [G.name]. Would you like to name your guardian something else?", "Name Guardian", G.name, MAX_NAME_LEN)
+				guardianNewName = reject_bad_name(guardianNewName, 1)
+				if(timelimit >= world.time)
+					if(!isnull(guardianNewName))
+						G.name = guardianNewName
+						return
+					else
+						if(i > 0)
+							user << "<span class='danger'>That's an invalid name! You have [i] more [i > 1 ? "attempts" : "attempt"].</span>"
+						else
+							user << "<span class='danger'>Sorry, you've ran out of attempts! Looks like you're stuck with [G.name]!</span>"
+				else
+					user << "<span class='danger'>Sorry, you've ran out of time! Looks like you're stuck with [G.name]!</span>"
+					return
+		else
+			user << "[failure_message]"
+			used = FALSE
+
+/obj/item/weapon/guardiancreator/attack(mob/M, mob/living/carbon/human/user)
+	if(inUse == TRUE)
+		return
+	if(!M.client)
+		return
+	user << "<span class='notice'>You raise the arrow into the air.</span>"
+	user.visible_message("<span class='warning'>[user] prepares to stab [M]!</span>")
+	if(do_mob(user,M,50,uninterruptible=0))
+		inUse = TRUE
+		if(useonothers == TRUE)
+			if(isrobot(M))
+				..()
+				return
+			if(!isliving(M))
+				return
+			for(var/bad_mob in holo_black)
+				if(istype(M, bad_mob))
+					user << "<span class='warning'>The arrow rejects the [M]!</span>"
+					return
+
+			var/mob/living/L = M
+			if(L.mind)
+				var/datum/mind/mind = L.mind
+				feedback_add_details("stabs", "[mind.key]|[type]")
+
+			for(var/mob/living/simple_animal/hostile/guardian/G in living_mob_list)
+				if (G.summoner == L)
+					L << "You already have a [mob_name]!"
+					return
+			if(user.mind && user.mind.changeling)
+				L << "[ling_failure]"
+				return
+			if(used == TRUE)
+				L << "[used_message]"
+				return
+			if(limiteduses == TRUE)
+				used = TRUE
+			if(killchance == TRUE)
+				if(prob(percentchance))
+					L.visible_message("You didn't have enough fighting spirit!")
+					L.setToxLoss(100000) //Husks them to stop clone cheeze (not anymore now that its on mining)
+					return
+			L << "[use_message]"
+			var/list/mob/dead/observer/candidates = pollCandidates("Do you want to play as the [mob_name] of [L.real_name]?", "pAI", null, FALSE, 100)
+			var/mob/dead/observer/theghost = null
+			inUse = FALSE
+
+			if(candidates.len)
+				theghost = pick(candidates)
+				var/mob/living/simple_animal/hostile/guardian/G = spawn_guardian(L, theghost.key)
+				if(playsound == TRUE)
+					L << 'sound/misc/standactivated.ogg'
+				var/timelimit = world.time + 600//1 min to rename the stand
+				//Give the stand user 3 chances to rename their stand
+				for(var/i = 2, i >= 0,i--)
+					var/guardianNewName = stripped_input(L, "You are the user of [G.name]. Would you like to name your guardian something else?", "Name Guardian", G.name, MAX_NAME_LEN)
+					guardianNewName = reject_bad_name(guardianNewName, 1)
+					if(timelimit >= world.time)
+						if(!isnull(guardianNewName))
+							G.name = guardianNewName
+							return
+						else
+							if(i > 0)
+								L << "<span class='danger'>That's an invalid name! You have [i] more [i > 1 ? "attempts" : "attempt"].</span>"
+							else
+								L << "<span class='danger'>Sorry, you've ran out of attempts! Looks like you're stuck with [G.name]!</span>"
+					else
+						L << "<span class='danger'>Sorry, you've ran out of time! Looks like you're stuck with [G.name]!</span>"
+						return
+			else
+				L << "[failure_message]"
+				used = FALSE
 	else
-		user << "[failure_message]"
-		used = FALSE
+		return
 
 
 /obj/item/weapon/guardiancreator/proc/spawn_guardian(var/mob/living/user, var/key)
-	var/gaurdiantype = "Standard"
+	var/guardiantype = "Standard"
 	if(random)
-		gaurdiantype = pick(possible_guardians)
+		guardiantype = pick(possible_guardians)
 	else
-		gaurdiantype = input(user, "Pick the type of [mob_name]", "[mob_name] Creation") as null|anything in possible_guardians
+		guardiantype = input(user, "Pick the type of [mob_name]", "[mob_name] Creation") as null|anything in possible_guardians
 	var/pickedtype = /mob/living/simple_animal/hostile/guardian/punch
-	var/picked_color = randomColor(0)
-	switch(gaurdiantype)
+	var/picked_color = randomColor(1)
+	switch(guardiantype)
 
 		if("Chaos")
 			pickedtype = /mob/living/simple_animal/hostile/guardian/fire
@@ -655,6 +793,7 @@
 	switch (theme)
 		if("magic")
 			G.name = "[mob_name] [capitalize(picked_color)]"
+			G.guardiancolor = color2hex(picked_color)
 			G.color = color2hex(picked_color)
 			G.real_name = "[mob_name] [capitalize(picked_color)]"
 			user << "[G.magic_fluff_string]."
@@ -668,6 +807,7 @@
 			G.animated_manifest = TRUE
 			user << "[G.tech_fluff_string]."
 			G.speak_emote = list("states")
+			G.guardiancolor = techcolor2hex(colour)
 		if("bio")
 			user << "[G.bio_fluff_string]."
 			G.attacktext = "swarms"
@@ -688,9 +828,11 @@
 	used_message = "The injector has already been used."
 	failure_message = "<B>...ERROR. BOOT SEQUENCE ABORTED. AI FAILED TO INTIALIZE. PLEASE CONTACT SUPPORT OR TRY AGAIN LATER.</B>"
 	ling_failure = "The holoparasites recoil in horror. They want nothing to do with a creature like you."
+	limiteduses = TRUE
 
 /obj/item/weapon/guardiancreator/tech/choose
 	random = FALSE
+	limiteduses = TRUE
 
 /obj/item/weapon/guardiancreator/biological
 	name = "scarab egg cluster"
@@ -702,9 +844,38 @@
 	use_message = "The eggs begin to twitch..."
 	used_message = "The cluster already hatched."
 	failure_message = "<B>...but soon settles again. Guess they weren't ready to hatch after all.</B>"
+	limiteduses = TRUE
 
 /obj/item/weapon/guardiancreator/biological/choose
 	random = FALSE
+	limiteduses = TRUE
+
+/obj/item/weapon/guardiancreator/standarrow
+	name = "Stand Arrow"
+	desc = "A mysterious arrow capable of granting great power. Be careful, there is a chance it won't take to you..."
+	icon = 'icons/obj/standarrow.dmi'
+	icon_state = "standarrowicon"
+	item_state = "standarrow"
+	slot_flags = SLOT_BELT
+	force = 5
+	stamina_percentage = 0.75
+	throwforce = 3
+	w_class = 3
+	attack_verb = list("attacked", "stabbed", "jabbed", "impaled")
+	hitsound = 'sound/weapons/knife.ogg'
+	sharpness = IS_SHARP
+	unacidable = 1
+	theme = "magic"
+	mob_name = "Stand"
+	use_message = "You stab yourself with the arrow!"
+	used_message = "Hang on, how is an arrow used? This shouldn't happen! Submit a bug report!"
+	failure_message = "<B>...nothing happened. Maybe you should try again later.</B>"
+	limiteduses = FALSE
+	playsound = TRUE
+	killchance = TRUE
+	useonothers = TRUE
+	usekey = FALSE
+
 
 
 /obj/item/weapon/paper/guardian

@@ -231,7 +231,7 @@
 	name = "syringe (calomel)"
 	desc = "Contains calomel."
 	list_reagents = list("calomel" = 15)
-	
+
 /obj/item/weapon/reagent_containers/syringe/plasma
 	name = "syringe (plasma)"
 	desc = "Contains plasma."

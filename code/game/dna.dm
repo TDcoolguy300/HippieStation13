@@ -15,11 +15,15 @@
 	if(new_holder)
 		holder = new_holder
 
-/datum/dna/proc/transfer_identity(mob/living/carbon/destination, transfer_SE = 0)
+/datum/dna/proc/transfer_identity(mob/living/carbon/destination, transfer_SE = 0, noallow_cat = 0)
 	destination.dna.unique_enzymes = unique_enzymes
 	destination.dna.uni_identity = uni_identity
 	destination.dna.blood_type = blood_type
-	destination.set_species(species.type, icon_update=0)
+	if(noallow_cat)
+		if(species.type != /datum/species/cat)
+			destination.set_species(species.type, icon_update=0)
+	else
+		destination.set_species(species.type, icon_update=0)
 	destination.dna.features = features
 	destination.dna.real_name = real_name
 	if(transfer_SE)
@@ -308,11 +312,15 @@ mob/living/carbon/human/updateappearance(icon_update=1, mutcolor_update=0, mutat
 	var/datum/mutation/human/HM = pick((bad_mutations | not_good_mutations) - mutations_list[RACEMUT])
 	. = HM.force_give(M)
 
-/proc/randmutg(mob/living/carbon/M)
+/proc/randmutg(mob/living/carbon/M, var/nohulk=0)
 	if(!M.has_dna())
 		return
-	var/datum/mutation/human/HM = pick(good_mutations)
-	. = HM.force_give(M)
+	if(!nohulk)
+		var/datum/mutation/human/HM = pick(good_mutations)
+		. = HM.force_give(M)
+	else
+		var/datum/mutation/human/HM = pick((good_mutations) - mutations_list[HULK])
+		. = HM.force_give(M)
 
 /proc/randmuti(mob/living/carbon/M)
 	if(!M.has_dna())

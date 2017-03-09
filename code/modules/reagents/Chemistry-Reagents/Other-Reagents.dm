@@ -188,14 +188,14 @@
 	if(!data) data = 1
 	data++
 	M.jitteriness = max(M.jitteriness-5,0)
+	if(is_vampire(M))
+		M.adjustFireLoss(8) //Holy water kills vampires FAST.
 	if(data >= 30)		// 12 units, 54 seconds @ metabolism 0.4 units & tick rate 1.8 sec
 		if (!M.stuttering) M.stuttering = 1
 		M.stuttering += 4
 		M.Dizzy(5)
 		if(iscultist(M) && prob(5))
 			M.say(pick("Av'te Nar'sie","Pa'lid Mors","INO INO ORA ANA","SAT ANA!","Daim'niodeis Arc'iai Le'eones","Egkau'haom'nai en Chaous","Ho Diak'nos tou Ap'iron","R'ge Na'sie","Diabo us Vo'iscum","Si gn'um Co'nu"))
-		if(is_vampire(M))
-			M.adjustFireLoss(8) //Holy water kills vampires FAST.
 	if(data >= 75 && prob(33))	// 30 units, 135 seconds
 		if (!M.confused) M.confused = 1
 		M.confused += 3
@@ -222,21 +222,19 @@
 	name = "Unholy Water"
 	id = "unholywater"
 	description = "Something that shouldn't exist on this plane of existance."
+	metabolization_rate = 2 * REAGENTS_METABOLISM
 
 /datum/reagent/fuel/unholywater/on_mob_life(mob/living/M)
-	M.adjustBrainLoss(3)
 	if(iscultist(M))
-		M.status_flags |= GOTTAGOFAST
+		speedboost = FAST
 		M.drowsyness = max(M.drowsyness-5, 0)
-		M.AdjustParalysis(-2)
-		M.AdjustStunned(-2)
-		M.AdjustWeakened(-2)
 	else
+		speedboost = NORMAL
+		M.adjustBrainLoss(3)
 		M.adjustToxLoss(2)
 		M.adjustFireLoss(2)
 		M.adjustOxyLoss(2)
 		M.adjustBruteLoss(2)
-	holder.remove_reagent(src.id, 1)
 
 /datum/reagent/hellwater			//if someone has this in their system they've really pissed off an eldrich god
 	name = "Hell Water"
@@ -436,6 +434,16 @@
 	reagent_state = GAS
 	color = "#808080" // rgb: 128, 128, 128
 
+/datum/reagent/oxygen/reaction_obj(obj/O, reac_volume)
+	if((!O) || (!reac_volume))
+		return 0
+	O.atmos_spawn_air("o2=[reac_volume/2];TEMP=[T20C]")
+
+/datum/reagent/oxygen/reaction_turf(turf/simulated/T, reac_volume)
+	if(istype(T))
+		T.atmos_spawn_air("o2=[reac_volume/2];TEMP=[T20C]")
+	return
+
 /datum/reagent/copper
 	name = "Copper"
 	id = "copper"
@@ -449,6 +457,17 @@
 	description = "A colorless, odorless, tasteless gas."
 	reagent_state = GAS
 	color = "#808080" // rgb: 128, 128, 128
+
+/datum/reagent/nitrogen/reaction_obj(obj/O, reac_volume)
+	if((!O) || (!reac_volume))
+		return 0
+	O.atmos_spawn_air("n2=[reac_volume/2];TEMP=[T20C]")
+
+/datum/reagent/nitrogen/reaction_turf(turf/simulated/T, reac_volume)
+	if(istype(T))
+		T.atmos_spawn_air("n2=[reac_volume/2];TEMP=[T20C]")
+	return
+
 
 /datum/reagent/hydrogen
 	name = "Hydrogen"
@@ -1243,3 +1262,16 @@
 		var/t_loc = get_turf(O)
 		qdel(O)
 		new /obj/item/clothing/shoes/galoshes/dry(t_loc)
+
+/datum/reagent/hyperzine
+	name = "Hyperzine"
+	id = "hyperzine"
+	description = "A common stimulant drug derived from caffeine that can result in enhanced speed and endurance with minimal side effects."
+	reagent_state = LIQUID
+	color = "#FFFFB3" // rgb: 255, 255, 179
+	speedboost = FAST
+
+/datum/reagent/hyperzine/on_mob_life(mob/living/M)
+	M.Jitter(2)
+	M.adjustStaminaLoss(-1)
+
